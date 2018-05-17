@@ -63,6 +63,32 @@ public class MovieDBHelper {
     }
 
     /**
+     *  String id = "299536-avengers-infinity-war";
+     *             Movie movie = Movie.builder()
+     *                 .id(id)
+     *                 .overview("As the Avengers and their allies have continued to protect the world from threats too large for any one hero to handle, a new danger has emerged from the cosmic shadows: Thanos. A despot of intergalactic infamy, his goal is to collect all six Infinity Stones, artifacts of unimaginable power, and use them to inflict his twisted will on all of reality. Everything the Avengers have fought for has led up to this moment - the fate of Earth and existence itself has never been more uncertain.")
+     *                 .popularity(85.0f)
+     *                 .posterPath("https://image.tmdb.org/t/p/w300_and_h450_bestv2/7WsyChQLEftFiDOVTGkv3hFpyyt.jpg")
+     *                 //.logoPath("http://image.tmdb.org/t/p/w45" + movieNode.get("poster_path").asText())
+     *                 .title("Avengers: Infinity War")
+     *                 .price(ThreadLocalRandom.current().nextDouble(1.0, 10.0))
+     *                 .build();
+     *             movieMap.put(id, movie);
+     *
+     *             String id2 = "284054-black-panther";
+     *             Movie movie2 = Movie.builder()
+     *                 .id(id)
+     *                 .overview("King T'Challa returns home from America to the reclusive, technologically advanced African nation of Wakanda to serve as his country's new leader. However, T'Challa soon finds that he is challenged for the throne by factions within his own country as well as without. Using powers reserved to Wakandan kings, T'Challa assumes the Black Panther mantel to join with girlfriend Nakia, the queen-mother, his princess-kid sister, members of the Dora Milaje (the Wakandan 'special forces') and an American secret agent, to prevent Wakanda from being dragged into a world war.")
+     *                 .popularity(73.0f)
+     *                 .posterPath("https://image.tmdb.org/t/p/w500/uxzzxijgPIY7slzFvMotPv8wjKA.jpg")
+     *                 //.logoPath("http://image.tmdb.org/t/p/w45" + movieNode.get("poster_path").asText())
+     *                 .title("Black Panther")
+     *                 .price(ThreadLocalRandom.current().nextDouble(1.0, 10.0))
+     *                 .build();
+     *             movieMap.put(id2, movie2);
+     */
+
+    /**
      * This method queries the external API and caches the movies, for the demo purpose we just query only first page
      *
      * @return - the status code of the invocation

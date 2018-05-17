@@ -32,12 +32,12 @@ spec:
           protocol: TCP
         livenessProbe:
           httpGet:
-            port: http
+            port: 8080
             path: /healthz
           initialDelaySeconds: 60
         readinessProbe:
           httpGet:
-            port: http
+            port: 8080
             path: /healthz
           initialDelaySeconds: 60
         volumeMounts:

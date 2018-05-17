@@ -20,7 +20,7 @@
     <lombok.version>1.16.16</lombok.version>
     <jgroups.stack.file>default-jgroups-kubernetes.xml</jgroups.stack.file>
     <maven.test.skip>true</maven.test.skip>
-    <fabric8-maven-plugin.version>3.5.33</fabric8-maven-plugin.version>
+    <fabric8-maven-plugin.version>3.5.38</fabric8-maven-plugin.version>
 
     <!-- application configuration -->
     <fabric8-maven-plugin.from.image>fabric8/s2i-java:2.0</fabric8-maven-plugin.from.image>
@@ -195,32 +195,6 @@
               <goals>
                 <goal>repackage</goal>
               </goals>
-            </execution>
-          </executions>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-enforcer-plugin</artifactId>
-          <version>1.4.1</version>
-          <executions>
-            <execution>
-              <id>enforce-mandatory-property</id>
-              <goals>
-                <goal>enforce</goal>
-              </goals>
-              <configuration>
-                <rules>
-                  <requireProperty>
-                    <property>apiKey</property>
-                    <message>You must pass base64 hash of the apiKey like -DapiKey="base64 encoded api key"
-                      Please visit https://www.themoviedb.org/documentation/api for more info.
-                    </message>
-                    <regex>^[A-Za-z0-9+\/=]*$</regex>
-                    <regexMessage>Please pass a valid base64 encoded value for your apiKey</regexMessage>
-                  </requireProperty>
-                </rules>
-                <fail>true</fail>
-              </configuration>
             </execution>
           </executions>
         </plugin>
