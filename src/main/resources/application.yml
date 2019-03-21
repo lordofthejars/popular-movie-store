@@ -1,6 +1,6 @@
 moviestore:
   apiEndpointUrl: "https://api.themoviedb.org/3"
-  apiKey: "c4e4545259f057acbb19e332a5fd8ace"
+  apiKey: ""
 spring:
   redis:
     host: redis
