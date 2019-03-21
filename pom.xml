@@ -22,12 +22,6 @@
     <maven.test.skip>true</maven.test.skip>
     <fabric8-maven-plugin.version>3.3.5</fabric8-maven-plugin.version>
 
-    <!-- application configuration -->
-    <fabric8-maven-plugin.from.image>fabric8/s2i-java:2.0</fabric8-maven-plugin.from.image>
-    <fabric8-maven-plugin.image.name>%a</fabric8-maven-plugin.image.name>
-    <fabric8-maven-plugin.resourceDir>${basedir}/src/main/fabric8</fabric8-maven-plugin.resourceDir>
-    <replicas>2</replicas>
-
     <infinispan-spring-boot-starter.version>1.0.0.Final</infinispan-spring-boot-starter.version>
 
     <thymeleaf.version>3.0.6.RELEASE</thymeleaf.version>
@@ -109,37 +103,9 @@
       <optional>true</optional>
     </dependency>
 
-    <!-- Caching via infinispan-->
-
     <dependency>
-      <groupId>org.infinispan</groupId>
-      <artifactId>infinispan-core</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.infinispan</groupId>
-      <artifactId>infinispan-cloud</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.infinispan</groupId>
-      <artifactId>infinispan-spring4-embedded</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.infinispan</groupId>
-      <artifactId>infinispan-spring-boot-starter</artifactId>
-      <version>${infinispan-spring-boot-starter.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.infinispan</groupId>
-          <artifactId>infinispan-commons</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.infinispan</groupId>
-          <artifactId>infinispan-client-hotrod</artifactId>
-        </exclusion>
-      </exclusions>
+      <groupId>org.springframework.session</groupId>
+      <artifactId>spring-session-data-redis</artifactId>
     </dependency>
 
     <!-- Compile time only-->
@@ -165,41 +131,8 @@
 
   </dependencies>
 
-
-  <profiles>
-    <!-- Profile to manage Canary releases -->
-    <profile>
-      <id>canary</id>
-      <properties>
-        <replicas>0</replicas>
-        <fabric8-maven-plugin.resourceDir>${basedir}/src/main/fabric8-canary</fabric8-maven-plugin.resourceDir>
-        <fabric8-maven-plugin.image.name>%a:%v.Canary</fabric8-maven-plugin.image.name>
-      </properties>
-    </profile>
-  </profiles>
-
   <build>
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <groupId>io.fabric8</groupId>
-          <artifactId>fabric8-maven-plugin</artifactId>
-          <version>${fabric8-maven-plugin.version}</version>
-        </plugin>
-        <plugin>
-          <groupId>org.springframework.boot</groupId>
-          <artifactId>spring-boot-maven-plugin</artifactId>
-          <version>${spring-boot.version}</version>
-          <executions>
-            <execution>
-              <goals>
-                <goal>repackage</goal>
-              </goals>
-            </execution>
-          </executions>
-        </plugin>
-      </plugins>
-    </pluginManagement>
+
     <plugins>
 
       <plugin>
@@ -211,35 +144,15 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
         <version>${spring-boot.version}</version>
-      </plugin>
-
-      <plugin>
-        <groupId>io.fabric8</groupId>
-        <artifactId>fabric8-maven-plugin</artifactId>
-        <version>${fabric8-maven-plugin.version}</version>
         <executions>
           <execution>
             <goals>
-              <goal>build</goal>
-              <goal>resource</goal>
+              <goal>repackage</goal>
             </goals>
           </execution>
         </executions>
-        <configuration>
-          <resourceDir>${fabric8-maven-plugin.resourceDir}</resourceDir>
-          <images>
-            <image>
-              <name>${fabric8-maven-plugin.image.name}</name>
-              <build>
-                <from>${fabric8-maven-plugin.from.image}</from>
-                <assembly>
-                  <descriptorRef>artifact</descriptorRef>
-                </assembly>
-              </build>
-            </image>
-          </images>
-        </configuration>
       </plugin>
+
     </plugins>
   </build>
 </project>

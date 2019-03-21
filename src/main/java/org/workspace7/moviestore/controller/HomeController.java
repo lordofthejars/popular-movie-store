@@ -16,14 +16,12 @@
 
 package org.workspace7.moviestore.controller;
 
+import java.util.HashMap;
 import lombok.extern.slf4j.Slf4j;
-import org.infinispan.AdvancedCache;
-import org.infinispan.health.HealthStatus;
-import org.infinispan.spring.provider.SpringEmbeddedCacheManager;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.session.MapSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -50,11 +48,8 @@ public class HomeController {
 
     final MovieDBHelper movieDBHelper;
 
-    final SpringEmbeddedCacheManager cacheManager;
-
     @Autowired
-    public HomeController(SpringEmbeddedCacheManager cacheManager, MovieDBHelper movieDBHelper) {
-        this.cacheManager = cacheManager;
+    public HomeController(MovieDBHelper movieDBHelper) {
         this.movieDBHelper = movieDBHelper;
     }
 
@@ -77,18 +72,15 @@ public class HomeController {
             .collect(Collectors.toList());
 
         if (session != null) {
-            AdvancedCache<String, Object> sessionCache = (AdvancedCache<String, Object>)
-                cacheManager.getCache("moviestore-sessions-cache").getNativeCache();
 
-            Optional<MapSession> mapSession = Optional.ofNullable((MapSession) sessionCache.get(session.getId()));
+            final String sessionId = session.getId();
 
-            log.info("Session already exists, retrieving values from session {}", mapSession);
+            log.info("Session already exists, retrieving values from session {}", sessionId);
 
             int cartCount = 0;
 
-            if (mapSession.isPresent()) {
 
-                MovieCart movieCart = mapSession.get().getAttribute(ShoppingCartController.SESSION_ATTR_MOVIE_CART);
+                MovieCart movieCart = (MovieCart) session.getAttribute(ShoppingCartController.SESSION_ATTR_MOVIE_CART);
 
                 if (movieCart != null) {
 
@@ -112,7 +104,6 @@ public class HomeController {
 
                     cartCount = movieItems.size();
                 }
-            }
             modelAndView.addObject("cartCount", cartCount);
             modelAndView.addObject("movies", movieList);
         } else {
@@ -154,16 +145,7 @@ public class HomeController {
 
     @GetMapping("/healthz")
     public ResponseEntity healthz() {
-
-        HealthStatus healthStatus = cacheManager.getNativeCacheManager()
-            .getHealth().getClusterHealth().getHealthStatus();
-
-        if (healthStatus == HealthStatus.HEALTHY) {
-            log.info("HEALTHY");
-            return new ResponseEntity(HttpStatus.OK);
-        }
-
-        return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity(HttpStatus.OK);
     }
 
 }

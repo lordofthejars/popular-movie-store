@@ -1,10 +1,13 @@
 moviestore:
   apiEndpointUrl: "https://api.themoviedb.org/3"
-  apiKey: "${API_KEY}"
-infinispan:
-  embedded:
-    config-xml: infinispan-moviestore.xml
+  apiKey: "c4e4545259f057acbb19e332a5fd8ace"
 spring:
+  redis:
+    host: redis
+    password:
+    port: 6379
+  session:
+    store-type: redis
   thymeleaf:
     mode: HTML
     cache: false

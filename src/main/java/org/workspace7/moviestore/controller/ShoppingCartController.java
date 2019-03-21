@@ -51,7 +51,6 @@ public class ShoppingCartController {
 
     public static final String SESSION_ATTR_MOVIE_CART = "MOVIE_CART";
 
-
     final MovieDBHelper movieDBHelper;
 
     @Autowired

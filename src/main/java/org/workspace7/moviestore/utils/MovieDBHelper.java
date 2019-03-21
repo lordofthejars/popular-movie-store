@@ -18,10 +18,9 @@ package org.workspace7.moviestore.utils;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.ArrayList;
+import java.util.Collection;
 import lombok.extern.slf4j.Slf4j;
-import org.infinispan.AdvancedCache;
-import org.infinispan.manager.EmbeddedCacheManager;
-import org.infinispan.stream.CacheCollectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -36,7 +35,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.Collectors;
 
 /**
  * @author kameshs
@@ -51,15 +49,12 @@ public class MovieDBHelper {
 
     final MovieStoreProps movieStoreProps;
 
-    final AdvancedCache<Object, Object> moviesCache;
+    final Map<String, Movie> moviesCache = new HashMap<>();
 
     @Autowired
-    public MovieDBHelper(RestTemplate restTemplate, MovieStoreProps movieStoreProps,
-                         EmbeddedCacheManager cacheManager) {
+    public MovieDBHelper(RestTemplate restTemplate, MovieStoreProps movieStoreProps) {
         this.restTemplate = restTemplate;
         this.movieStoreProps = movieStoreProps;
-        this.moviesCache = cacheManager
-            .getCache(POPULAR_MOVIES_CACHE).getAdvancedCache();
     }
 
     /**
@@ -160,14 +155,11 @@ public class MovieDBHelper {
             log.info("Loading movies from cache");
         }
 
-        List<Movie> movies = moviesCache.entrySet().stream()
-            .map(longMovieEntry -> longMovieEntry.getValue())
-            .map(o -> Movie.class.cast(o))
-            .collect(CacheCollectors.serializableCollector(() -> Collectors.toList()));
+        final Collection<Movie> movies = moviesCache.values();
 
         log.info("Loaded {} movies from cache", movies.size());
 
-        return movies;
+        return new ArrayList<>(movies);
     }
 }
 
