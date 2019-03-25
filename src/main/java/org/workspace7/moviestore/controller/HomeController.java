@@ -16,10 +16,13 @@
 
 package org.workspace7.moviestore.controller;
 
-import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -31,13 +34,6 @@ import org.workspace7.moviestore.data.MovieCart;
 import org.workspace7.moviestore.data.MovieCartItem;
 import org.workspace7.moviestore.utils.MovieDBHelper;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
 /**
  * @author kameshs
  */
@@ -45,6 +41,9 @@ import java.util.stream.Collectors;
 @Slf4j
 public class HomeController {
 
+
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
 
     final MovieDBHelper movieDBHelper;
 
@@ -54,12 +53,10 @@ public class HomeController {
     }
 
     @GetMapping("/")
-    public ModelAndView home(ModelAndView modelAndView, HttpServletRequest request) {
+    public ModelAndView home(ModelAndView modelAndView) {
 
         final String hostname = System.getenv().getOrDefault("HOSTNAME", "unknown");
         log.info("Request served by HOST {} ", hostname);
-
-        HttpSession session = request.getSession(false);
 
         List<Movie> movies = movieDBHelper.getAll();
 
@@ -71,20 +68,16 @@ public class HomeController {
                 .build())
             .collect(Collectors.toList());
 
-        if (session != null) {
+        final HashOperations<String, Object, Object> hashOperations = this.redisTemplate.opsForHash();
+        final Object storedCart = hashOperations.get(ShoppingCartController.SESSION_ATTR_MOVIE_CART,
+            ShoppingCartController.SESSION_ATTR_MOVIE_CART);
 
-            final String sessionId = session.getId();
-
-            log.info("Session already exists, retrieving values from session {}", sessionId);
+        if (storedCart != null) {
 
             int cartCount = 0;
-
-
-                MovieCart movieCart = (MovieCart) session.getAttribute(ShoppingCartController.SESSION_ATTR_MOVIE_CART);
+                MovieCart movieCart = (MovieCart) storedCart;
 
                 if (movieCart != null) {
-
-                    log.info("Movie Cart:{} for session id:{}", movieCart, session.getId());
 
                     final Map<String, Integer> movieItems = movieCart.getMovieItems();
 
@@ -117,7 +110,7 @@ public class HomeController {
 
 
     @PostMapping("/logout")
-    public ModelAndView clear(ModelAndView modelAndView, HttpServletRequest request) {
+    public ModelAndView clear(ModelAndView modelAndView) {
         final String hostname = System.getenv().getOrDefault("HOSTNAME", "unknown");
         List<Movie> movies = movieDBHelper.getAll();
 
@@ -129,12 +122,9 @@ public class HomeController {
                 .build())
             .collect(Collectors.toList());
 
-        HttpSession session = request.getSession(false);
 
-        if (session != null) {
-            log.info("Invalidating session:{}", session.getId());
-            session.invalidate();
-        }
+        final HashOperations<String, Object, Object> hashOperations = this.redisTemplate.opsForHash();
+        hashOperations.delete(ShoppingCartController.SESSION_ATTR_MOVIE_CART, ShoppingCartController.SESSION_ATTR_MOVIE_CART);
 
         log.info("New Session");
         modelAndView.addObject("movies", movieList);

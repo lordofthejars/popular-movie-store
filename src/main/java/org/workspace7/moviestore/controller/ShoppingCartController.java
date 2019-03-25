@@ -19,6 +19,8 @@ package org.workspace7.moviestore.controller;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -54,6 +56,9 @@ public class ShoppingCartController {
     final MovieDBHelper movieDBHelper;
 
     @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
+
+    @Autowired
     public ShoppingCartController(MovieDBHelper movieDBHelper) {
         this.movieDBHelper = movieDBHelper;
     }
@@ -61,23 +66,25 @@ public class ShoppingCartController {
     /**
      * @param movieId
      * @param qty
-     * @param session
      * @return
      */
     @GetMapping("/cart/add")
     public @ResponseBody
-    String addItemToCart(@RequestParam("movieId") String movieId, @RequestParam("quantity") int qty,
-                         HttpSession session) {
+    String addItemToCart(@RequestParam("movieId") String movieId, @RequestParam("quantity") int qty) {
 
         MovieCart movieCart;
 
-        if (session.getAttribute(SESSION_ATTR_MOVIE_CART) == null) {
+        final HashOperations<String, Object, Object> hashOperations = this.redisTemplate.opsForHash();
+        final Object storedCart = hashOperations.get(ShoppingCartController.SESSION_ATTR_MOVIE_CART,
+            ShoppingCartController.SESSION_ATTR_MOVIE_CART);
+
+        if (storedCart == null) {
             log.info("No Cart Exists for the session, creating one");
             movieCart = new MovieCart();
             movieCart.setOrderId(UUID.randomUUID().toString());
         } else {
             log.info("Cart Exists for the session, will be updated");
-            movieCart = (MovieCart) session.getAttribute(SESSION_ATTR_MOVIE_CART);
+            movieCart = (MovieCart) storedCart;
         }
 
         log.info("Adding/Updating {} with Quantity {} to cart ", movieId, qty);
@@ -93,30 +100,31 @@ public class ShoppingCartController {
         log.info("Movie Cart:{}", movieCart);
 
         //update the session back
-        session.setAttribute(SESSION_ATTR_MOVIE_CART, movieCart);
+        hashOperations.put(SESSION_ATTR_MOVIE_CART, SESSION_ATTR_MOVIE_CART, movieCart);
 
         return String.valueOf(movieCart.getMovieItems().size());
     }
 
     /**
      * @param modelAndView
-     * @param session
      * @param response
      * @return
      */
     @GetMapping("/cart/show")
-    public ModelAndView showCart(ModelAndView modelAndView, HttpSession session, HttpServletResponse response) {
+    public ModelAndView showCart(ModelAndView modelAndView, HttpServletResponse response) {
 
         final String hostname = System.getenv().getOrDefault("HOSTNAME", "unknown");
 
         modelAndView.addObject("hostname", hostname);
 
-        MovieCart movieCart = (MovieCart) session.getAttribute(SESSION_ATTR_MOVIE_CART);
 
-        log.info("Showing Cart {}", movieCart);
+        final HashOperations<String, Object, Object> hashOperations = this.redisTemplate.opsForHash();
+        final Object storedCart = hashOperations.get(ShoppingCartController.SESSION_ATTR_MOVIE_CART,
+            ShoppingCartController.SESSION_ATTR_MOVIE_CART);
 
+        if (storedCart != null) {
 
-        if (movieCart != null) {
+            MovieCart movieCart = (MovieCart) storedCart;
 
             modelAndView.addObject("movieCart", movieCart);
             AtomicReference<Double> cartTotal = new AtomicReference<>(0.0);
@@ -151,11 +159,14 @@ public class ShoppingCartController {
      *
      */
     @PostMapping("/cart/pay")
-    public ModelAndView checkout(ModelAndView modelAndView, HttpSession session, RedirectAttributes redirectAttributes) {
-        MovieCart movieCart = (MovieCart) session.getAttribute(SESSION_ATTR_MOVIE_CART);
-        if (movieCart != null) {
-            log.info("Your request {} will be processed, thank your for shopping", movieCart);
-            session.removeAttribute(SESSION_ATTR_MOVIE_CART);
+    public ModelAndView checkout(ModelAndView modelAndView, RedirectAttributes redirectAttributes) {
+
+        final HashOperations<String, Object, Object> hashOperations = this.redisTemplate.opsForHash();
+        final Object storedCart = hashOperations.get(ShoppingCartController.SESSION_ATTR_MOVIE_CART,
+            ShoppingCartController.SESSION_ATTR_MOVIE_CART);
+
+        if (storedCart != null) {
+            hashOperations.delete(SESSION_ATTR_MOVIE_CART, SESSION_ATTR_MOVIE_CART);
         }
         modelAndView.setViewName("redirect:/");
         redirectAttributes.addFlashAttribute("orderStatus", 1);
