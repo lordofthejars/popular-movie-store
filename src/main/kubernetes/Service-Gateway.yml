@@ -1,12 +1,12 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: gateway
+  name: movies-gateway
   labels:
-    app: gateway
+    app: movies-gateway
 spec:
   ports:
-   - port: 80
-     protocol: TCP
+  - name: http
+    port: 8080
   selector:
-   app: gateway
+    app: movies-gateway

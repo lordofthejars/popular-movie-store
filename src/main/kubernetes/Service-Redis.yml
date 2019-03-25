@@ -7,6 +7,5 @@ metadata:
 spec:
   ports:
   - port: 6379
-    name: http
   selector:
     app: redis

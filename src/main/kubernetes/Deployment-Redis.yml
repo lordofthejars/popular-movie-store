@@ -1,21 +1,28 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: redis-master
+  name: redis
+  labels:
+    app: redis
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+      version: "4.0.2"
   template:
     metadata:
       labels:
         app: redis
+        version: "4.0.2"
+        visualize: "true"
     spec:
       containers:
       - name: redis
-        image: redis:4.0.14
-        imagePullPolicy: "IfNotPresent"
-        resources:
-          requests:
-            cpu: 100m
-            memory: 100Mi
+        image: redis:4.0.2
+        livenessProbe:
+          tcpSocket:
+            port: 6379
         ports:
         - containerPort: 6379
+

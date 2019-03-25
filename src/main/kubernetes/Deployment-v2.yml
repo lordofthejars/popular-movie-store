@@ -2,28 +2,28 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   labels:
-    app: movies-gateway
-    version: v1
-  name: movies-gateway
+    app: movies
+    version: v2
+  name: movies-v2
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: movies-gateway
-      version: v1
+      app: movies
+      version: v2
   template:
     metadata:
       labels:
-        app: movies-gateway
-        version: v1
+        app: movies
+        version: v2
     spec:
       containers:
       - env:
         - name: JAVA_OPTIONS
           value: -Xmx256m
-        image: lordofthejars/movies-gateway:1.0.4
+        image: example/movies:v2
         imagePullPolicy: IfNotPresent
-        name: movies-gateway
+        name: movies
         ports:
         - containerPort: 8080
           name: http
